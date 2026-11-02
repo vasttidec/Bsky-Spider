@@ -2,31 +2,20 @@
 
 **English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [Русский](README.ru.md)
 
-> **Download:** [Bsky-Spider-1.2.0-win-x64.zip](https://github.com/vasttidec/Bsky-Spider/releases/latest) · SHA256: `3914EA8259D41FF04F3F349E3AB9CB8FDCBB4981411F28CE70BF01783DE5D8B0`
+**Bluesky media downloader**
 
-**Bluesky media downloader · Local-first · Original quality · No FFmpeg required**
+> Current version: 1.2.0
+> Download: https://github.com/vasttidec/Bsky-Spider/releases/tag/v1.2.0
 
-> Current version **1.2.0** (Windows x64 desktop / run from source / browser mode)
->
-> Repository: <https://github.com/vasttidec/Bsky-Spider>
+Bsky-Spider is built on the DeepSeek Harness framework; the whole project was developed with the DeepSeek-V4.1-Flash-1017 model at the Max reasoning level.
 
 Bsky-Spider is a Bluesky image and video downloader that runs entirely on your own machine: sign in securely with an **App Password**, browse any user's media posts, download in bulk by date and type, and save the **original files** rather than transcoded versions whenever possible. The interface keeps the four-page layout of earlier releases (Home / Downloads / Settings / About), and its interaction model is based on [X-Spider](https://github.com/MiningCattiva/x-spider).
 
-![Bsky-Spider home page](screenshots/home.png)
+![Bsky-Spider home page](screenshots/home-en.png)
 
 ## Table of contents
 
-- [1.2.0 Release Notes](#120-release-notes)
-- [1.1.5 Release Notes](#115-release-notes)
-- [1.1.4 Release Notes](#114-release-notes)
-- [1.1.3 Release Notes](#113-release-notes)
-- [1.1.2 Release Notes](#112-release-notes)
-- [1.1.1 Release Notes](#111-release-notes)
-- [1.1.0 Release Notes](#110-release-notes)
-- [1.0.1 Release Notes](#101-release-notes)
-- [1.0.0 Rewrite Notes](#100-rewrite-notes)
 - [Features](#features)
-- [Screenshots](#screenshots)
 - [How downloads work](#how-downloads-work)
 - [Install and run](#install-and-run)
 - [Sign-in and auto sign-in](#sign-in-and-auto-sign-in)
@@ -39,85 +28,9 @@ Bsky-Spider is a Bluesky image and video downloader that runs entirely on your o
 - [Verification scripts](#verification-scripts)
 - [FAQ](#faq)
 - [Known limitations](#known-limitations)
+- [Disclaimer](#disclaimer)
 - [Changelog](#changelog)
 - [Credits and license](#credits-and-license)
-
-## 1.2.0 Release Notes
-
-- **Linked to a GitHub repository**: The project is now published at <https://github.com/vasttidec/Bsky-Spider>; both the source and `Bsky-Spider-1.2.0-win-x64.zip` live in the repository.
-- **Check for updates now uses GitHub Releases**: Settings → App → "Check for updates" now requests the repository's latest Release and compares it with the current version. When a newer version exists it shows the version number, the release notes, and a download link; clicking "Go to download" opens the Releases page in your browser. When there is no newer version it reports "You are on the latest version".
-- **Multilingual README**: The README now consists of four files — English / 简体中文 / 繁體中文 / Русский — switchable at the top, with English opened by default.
-
-## 1.1.5 Release Notes
-
-- **Accounts that do not keep credentials are actually removed**: When "Keep sign-in credentials" is unchecked, the account is removed from the account manager on the next launch (its credentials are no longer kept), so you can no longer switch back to it.
-- **Signing out forgets the current account**: Clicking "Sign out" deletes the current account's sign-in credentials; if other saved accounts exist, the app automatically switches to one of them and signs in; if it was the last account, the app enters a fully signed-out state.
-- **Sidebar when fully signed out**: When no saved accounts exist, the "Account manager" button is no longer shown and only "Sign in to Bluesky" remains.
-- **Check-for-updates prompt**: Clicking the "Check for updates" button now reports "You are on the latest version".
-
-## 1.1.4 Release Notes
-
-- **Fallback for account switching**: After "Keep sign-in credentials" is unchecked for the current account, the app checks the other accounts on restart — if any of them is still checked, the first one from the top of the list becomes the current account; if none is checked, the app stays signed out.
-- **Consistent terminology**: The "delete sign-in credentials" wording was renamed, and the Simplified Chinese, Traditional Chinese, and Russian strings were updated to match; the checkbox in the account manager is now consistently labeled "Keep sign-in credentials".
-- **Account manager layout**: The "Keep sign-in credentials" checkbox moved to the right, right-aligned with the "Delete sign-in credentials" button.
-- **Check for updates**: Removed the description text under that row in Settings; only the button and the current version number remain.
-
-## 1.1.3 Release Notes
-
-- **"Save sign-in credentials" checkbox**: "Auto sign-in" in the account manager became "Save sign-in credentials", and each account can be checked independently; unchecked accounts no longer sign in automatically after a restart (the app stays signed out).
-- **Sidebar account panel follows the theme**: The sign-in / account / sign-out panel in the top-left corner of the home page now uses theme-appropriate colors in the Dark and Cyberpunk themes (deep-blue glass and neon cyan-purple).
-- **About page**: Removed the "Bsky-Spider v1.x.x" text at the bottom of the page; only the author information remains.
-- **Check-for-updates entry**: Settings → App has a new "Check for updates" row and button below "Download complete notification" (the current version number is displayed alongside); the button is not yet connected to GitHub and will be wired up in a later release.
-
-## 1.1.2 Release Notes
-
-- **Download complete notification on by default**: Fresh installs and "Restore default settings" now show the download complete notification by default.
-- **Default save path follows the system**: The default is now `Bsky-Spider` inside the system's real Downloads folder (`app.getPath("downloads")`, which supports a Downloads folder moved to another drive), instead of always using Downloads in the user directory.
-- **Adding an account no longer pre-fills old credentials**: When the sign-in window is opened from "Account manager → Add account" while already signed in, the account and password fields stay empty.
-- **About page copy**: Removed the footer line "Built for the open sky. Not affiliated with Bluesky, PBC."; "Privacy and disclaimer" now has a separate line: "Bsky-Spider is not affiliated with Bluesky, PBC."
-- **Path preview alignment**: The path preview in Settings → Download settings is now left-aligned with the "File name template" label.
-- **Per-account auto sign-in toggle**: A new "Auto sign-in" checkbox appears after each account's username in "Account manager"; checked accounts sign in automatically on the next launch, while unchecked ones stay signed out.
-- **Removed the "Clear auto sign-in" button**: Settings → App no longer offers this button; use the "Auto sign-in" checkbox in the account manager or delete the account instead.
-- **Wider sidebar**: The fixed left navigation grew from 232px to 272px, fixing button labels being truncated to an ellipsis in English, Russian, and other languages.
-
-## 1.1.1 Release Notes
-
-- **Signed-out state persists**: Clicking "Sign out" records the signed-out state, so the app no longer signs in automatically on the next launch; saved accounts can still be switched in "Account manager", and signing in again or switching accounts restores auto sign-in.
-- **Search history isolated per account**: Each account has its own search history, so switching accounts never reveals another account's entries; history left over from before the upgrade belongs to the first account that signs in, and is independent afterwards.
-- **Duplicate sign-in prompt**: Entering the account that is already signed in in the sign-in window now reports "This account is already signed in" instead of starting a duplicate sign-in.
-- **Sign-in page layout**: The description text in "A safer way to sign in" is now left-aligned with the icon.
-
-## 1.1.0 Release Notes
-
-- **Easier to tell accounts apart**: The account list shows Bluesky avatars (refreshed when the panel opens, and not re-requested within 10 minutes); each row shows the display name, the `@handle`, and — when it differs from the handle — the sign-in account, avoiding the confusion caused by showing only a "username without the suffix".
-- **Video muxing setting hidden**: Removed the "Video muxing" row and its description from Settings; the built-in MP4 muxing engine is always enabled, and HLS fallback streams are still remuxed losslessly into MP4.
-- **Data directory fix**: As long as a `data` folder exists next to `Bsky-Spider.exe`, it is always used, with no fallback caused by legacy `%APPDATA%` data or a failed write probe; a new `%APPDATA%\Bsky-Spider\startup.log` records the data directory actually in use, and the Settings page also shows where the data directory comes from.
-- **Sidebar changes**: Removed the "Signed in securely with an App Password" text; the sign-out button moved to the right of "Account manager" and was renamed to "Sign out".
-
-## 1.0.1 Release Notes
-
-- **Video output is always MP4**: Removed the "Remux HLS video" toggle. HLS fallback streams are now always remuxed by the built-in engine into an MP4 with a complete index (moov at the front), so Windows Explorer and players can generate cover thumbnails, and the task label always matches the actual file format.
-- **Stricter quality policy**: Videos and images are downloaded from the author's PDS as the original file first; the app only falls back to the Bluesky transcoded version when the original has been deleted, set to private, or returns non-media content. Temporary errors such as network hiccups remain retryable failed tasks instead of silently degrading quality; PDS resolution failures are retried automatically.
-- **"Request timeout" now really applies**: The setting now applies to Bluesky API requests and defaults to **30 seconds**.
-- **Account manager**: The sidebar has a new "Account manager" where multiple App Passwords can be saved (encrypted with Windows DPAPI) and switched with one click; signing out no longer deletes saved accounts.
-- **Data directory migration**: The desktop data directory is now the `data` folder next to Bsky-Spider.exe (falling back to `%APPDATA%` when that location is not writable); on first launch, old settings, task records, and sign-in credentials are migrated automatically.
-- **Restore default settings**: Settings → App has a new "Restore default settings" button.
-- **UI copy**: "Download manager" was renamed to "Downloads"; several strings on the sign-in window, home page, and About page were adjusted to match actual behavior.
-
-## 1.0.0 Rewrite Notes
-
-This rewrite centered on the **download logic**. The UI appearance, page structure, and interactions are unchanged, the name is still **Bsky-Spider**, and the version number is **1.0.0**.
-
-| Item | Before the rewrite (1.9.x) | After the rewrite (1.0.0) |
-| --- | --- | --- |
-| Original video quality | Prefers the original PDS MP4, but the HLS fallback relies on the bundled `ffmpeg.exe` | Prefers the original PDS MP4; the HLS fallback is turned into MP4 by the project's own TypeScript demuxer/muxer, and **the app no longer contains or invokes FFmpeg** |
-| Installer size | Ships an extra 64 MB `ffmpeg.exe` | No external media tools are bundled |
-| Download engine | Single-connection sequential streaming; HLS segments downloaded one at a time | Follows X-Spider's (aria2) approach: up to **6 connections** in parallel on servers that support ranges, automatic retries, and resumable downloads; HLS segments are fetched **4 at a time** in parallel, and completed segments are reused after a pause |
-| Failure handling | A single failed segment fails the whole file | Per-request retries (up to 3, exponential backoff) + timeout protection (20 s to connect / 45 s for response headers / 90 s of data silence) |
-| Logo | Old blue icon | Brand-new logo (replaced in `build/icon.ico`, the UI, the splash screen, and the app icon) |
-| Documentation | Out of sync with the implementation | Fully rewritten to match actual behavior |
-
-The download trade-offs match X-Spider's: **never transcode when the original file is available, and never invoke an external program just to remux**. Only when the original blob for a post has been cleaned up from the author's PDS does the app fall back to Bluesky's HLS transcoded stream — and that step also happens in-process.
 
 ## Features
 
@@ -136,42 +49,6 @@ The download trade-offs match X-Spider's: **never transcode when the original fi
 - **Proxy support**: Automatically uses the Windows system proxy or the `HTTPS_PROXY` / `HTTP_PROXY` environment variables, and also accepts a manually entered HTTP/HTTPS proxy.
 - **Configurable**: Save path, folder template, file name template, skip files that already exist, concurrency, request timeout, download complete notification, and one-click restore of default settings.
 - **Privacy**: All requests originate from a local Node.js service and media is written straight to a local folder; no account data or downloaded content is uploaded.
-
-## Screenshots
-
-| Home | Downloads |
-| --- | --- |
-| ![Home](screenshots/home.png) | ![Downloads](screenshots/downloads.png) |
-
-| Settings | About |
-| --- | --- |
-| ![Settings](screenshots/settings.png) | ![About](screenshots/about.png) |
-
-| Sign-in | Signed-out home |
-| --- | --- |
-| ![Sign-in](screenshots/login.png) | ![Signed out](screenshots/landing.png) |
-
-| Account manager |
-| --- |
-| ![Account manager](screenshots/accounts.png) |
-
-### Themes
-
-| Bluesky (default) | Dark | Cyberpunk |
-| --- | --- | --- |
-| ![Bluesky](screenshots/home.png) | ![Dark](screenshots/home-dark.png) | ![Cyberpunk](screenshots/home-cyber.png) |
-
-### Languages
-
-| Traditional Chinese | Русский |
-| --- | --- |
-| ![Traditional Chinese](screenshots/settings-zh-tw.png) | ![Русский](screenshots/settings-ru.png) |
-
-### Mobile layout
-
-| Home | Settings |
-| --- | --- |
-| ![Mobile home](screenshots/mobile-home.png) | ![Mobile settings](screenshots/mobile-settings.png) |
 
 ## How downloads work
 
@@ -245,20 +122,7 @@ SHA256 (ZIP): `3914EA8259D41FF04F3F349E3AB9CB8FDCBB4981411F28CE70BF01783DE5D8B0`
 - Do not double-click the exe directly inside the archive preview window;
 - If startup fails, check `data\server.log` next to the exe (or `%APPDATA%\Bsky-Spider\data\server.log` when that is not writable).
 
-### Option 2: Single-file portable build
-
-`Bsky-Spider-1.2.0-portable.exe` is produced by electron-builder (a local build artifact only; the repository ships the ZIP). At startup it extracts itself to the system temp directory:
-
-```bat
-mkdir C:\Temp
-set TEMP=C:\Temp
-set TMP=C:\Temp
-"X:\path\to\Bsky-Spider-1.2.0-portable.exe"
-```
-
-It is not code-signed, so SmartScreen may warn on first run (More info → Run anyway).
-
-### Option 3: Run from source
+### Option 2: Run from source
 
 Requires **Node.js 20 or newer**.
 
@@ -497,20 +361,17 @@ No files are lost. Unfinished tasks are kept as "Waiting/Paused" and temporary f
 - The built-in muxer supports H.264 video + AAC audio (the combination used by all of Bluesky's current transcodes); other codecs (such as HEVC) keep the `.ts` file and show a notice.
 - HLS streams protected by DRM / encryption are not supported.
 - Automatic sign-in is only available in the Windows desktop build; browser mode does not save App Passwords.
-- This project is not an official Bluesky client and is not affiliated with Bluesky, PBC.
+
+## Disclaimer
+
+- This tool is only for backing up content you have the right to save. Please respect the original authors' copyright and the Bluesky community rules.
+- Do not use this tool for bulk scraping, harassment, or any purpose that violates the Bluesky Terms of Service.
+- Bsky-Spider is not affiliated with Bluesky, PBC.
+- Please comply with the laws, regulations, and regulatory requirements of your country.
 
 ## Changelog
 
-- **1.2.0**: The project was uploaded to GitHub (vasttidec/Bsky-Spider), check for updates now uses GitHub Releases, and the README was split into four versions: English / Simplified Chinese / Traditional Chinese / Russian.
-- **1.1.5**: Accounts that do not keep credentials are removed on restart; signing out deletes the current account and switches to another saved account automatically, hiding "Account manager" when none remain; the check-for-updates message now reads "You are on the latest version".
-- **1.1.4**: When the current account does not keep credentials, a restart switches to another checked account automatically; the delete-credentials wording was renamed and synced across languages; the account manager checkbox and delete button are now right-aligned; the check-for-updates description text was removed.
-- **1.1.3**: "Auto sign-in" became "Save sign-in credentials" with a per-account checkbox; the sidebar account panel follows the Dark/Cyberpunk themes; the version text was removed from the About page; Settings gained a "Check for updates" entry (not yet connected to GitHub).
-- **1.1.2**: The download complete notification is on by default; the default save path uses the system's real Downloads folder; adding an account no longer shows the signed-in account's credentials; About page copy adjusted; path preview left-aligned; the account manager gained an "Auto sign-in" checkbox and the "Clear auto sign-in" setting was removed; the wider sidebar fixes English/Russian truncation.
-- **1.1.1**: The app stays signed out after sign-out (accounts are kept for switching); search history is isolated per account; signing in to the same account again reports "This account is already signed in"; the sign-in page description text is aligned with the icon.
-- **1.1.0**: The account manager shows avatars and distinguishes display name, handle, and sign-in account; the video muxing setting is hidden (the engine is always enabled); fixed the `data` folder next to the exe not being read when legacy data existed, and added a startup diagnostic log; the sidebar's signed-in text was removed and the sign-out button moved to the right of the account manager and was renamed.
-- **1.0.1**: Removed the "Remux HLS video" toggle and unified HLS fallback output as faststart MP4 (cover thumbnails work, and the label matches the real format); originals are only abandoned when confirmed unavailable, so transient network errors no longer degrade quality; the "Request timeout" setting now really applies and defaults to 30 seconds; added multi-account management and switching; the data directory moved to `data` next to the exe with automatic migration; Settings gained "Restore default settings"; "Download manager" was renamed to "Downloads"; sign-in window, home page, and About page copy adjusted.
-- **1.0.0**: Rewrote the download logic and removed the FFmpeg dependency, moving original-quality video and HLS fallback entirely to in-house implementations; added multi-connection chunked downloads, request retries, HLS segment parallelism, and resume reuse; replaced the logo; unified the version number at 1.0.0; rewrote all documentation.
-- **1.9.x and earlier**: Historical versions, no longer maintained (no backup of the pre-rewrite release notes was kept).
+- **1.2.0**: first publicly released version of Bsky-Spider.
 
 ## Credits and license
 
@@ -518,4 +379,4 @@ No files are lost. Unfinished tasks are kept as "Waiting/Paused" and temporary f
 - App Password sign-in and media fetching reference: [Bluesky-Media-Downloader](https://github.com/maxreinartz/Bluesky-Media-Downloader) by [maxreinartz](https://github.com/maxreinartz) (MIT)
 - Built-in MP4 muxing engine: implemented by this project; it only copies streams and contains no FFmpeg code
 
-Bsky-Spider is released under **GPL-3.0-only**; see [LICENSE](LICENSE) for the full text. Please respect the original authors' copyright and the Bluesky community rules, and only download content you have the right to save.
+Bsky-Spider is released under **GPL-3.0-only**; see [LICENSE](LICENSE) for the full text.
