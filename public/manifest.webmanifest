@@ -1,0 +1,18 @@
+{
+  "name": "Bsky-Spider",
+  "short_name": "Bsky-Spider",
+  "description": "Local Bluesky media downloader",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f9ff",
+  "theme_color": "#1185fe",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+release/
+data/
+downloads/
+.tmp/
+screenshots/.cache/
+*.log
+.DS_Store
+Thumbs.db
+*.exe

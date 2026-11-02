@@ -1,0 +1,36 @@
+appId: app.bskyspider
+productName: Bsky-Spider
+copyright: ""
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - package.json
+  - electron/**/*
+  - dist/server/**/*
+  - dist/web/**/*
+  - build/icon.ico
+  - "!**/*.map"
+  - "!node_modules/**/*"
+
+asar: false
+npmRebuild: false
+compression: normal
+electronDist: node_modules/electron/dist
+
+win:
+  target:
+    - target: portable
+      arch:
+        - x64
+  icon: build/icon.ico
+  artifactName: Bsky-Spider-${version}-portable.exe
+
+portable:
+  artifactName: Bsky-Spider-${version}-portable.exe
+  requestExecutionLevel: user
+  unpackDirName: Bsky-Spider
+
+publish: null
