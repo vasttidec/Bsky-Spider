@@ -36,18 +36,6 @@ export function u32(value: number): Buffer {
   return buffer;
 }
 
-export function i32(value: number): Buffer {
-  const buffer = Buffer.alloc(4);
-  buffer.writeInt32BE(value, 0);
-  return buffer;
-}
-
-export function u64(value: number): Buffer {
-  const buffer = Buffer.alloc(8);
-  buffer.writeBigUInt64BE(BigInt(Math.max(0, Math.round(value))), 0);
-  return buffer;
-}
-
 export function fourcc(type: string): Buffer {
   const buffer = Buffer.alloc(4);
   buffer.write(type, 0, 'latin1');

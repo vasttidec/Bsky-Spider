@@ -15,7 +15,7 @@ import {
   renderFileTemplate,
   renderFolderTemplate,
 } from '../shared/templates';
-import { MAX_TASKS_PER_BATCH, TASKS_FILE } from './config';
+import { DATA_DIR, MAX_TASKS_PER_BATCH, TASKS_FILE } from './config';
 import { downloadFile } from './download-engine';
 import { ApiError, assertHttpUrl, httpFetch, isAbortError } from './http';
 import {
@@ -26,6 +26,13 @@ import {
   type HlsMediaPlaylist,
 } from './hls';
 import { remuxTsToMp4 } from './remux';
+import {
+  joinRemoteUrl,
+  parseRemoteTarget,
+  remoteDirUrl,
+  type RemoteTarget,
+} from './remote';
+import { ensureRemoteDirectory, remoteFileExists, uploadToRemote } from './webdav';
 import {
   ensureDataDir,
   getSettings,
@@ -58,6 +65,12 @@ interface PathPlan {
   dir: string;
   fileName: string;
   filePath: string;
+  /** Set when the save location is a network (WebDAV) target. */
+  remote?: RemoteTarget;
+  /** Final URL on the WebDAV server. */
+  remoteUrl?: string;
+  /** Path relative to the save root; also valid for remote targets. */
+  relativePath?: string;
 }
 
 interface DownloadResult {
@@ -348,7 +361,7 @@ export class DownloadManager {
         speed: 0,
         eta: null,
         fileName: plan.fileName,
-        relativePath: path.relative(plan.root, plan.filePath),
+        relativePath: plan.relativePath ?? path.relative(plan.root, plan.filePath),
         skipped: false,
         createdAt: new Date().toISOString(),
       };
@@ -504,18 +517,35 @@ export class DownloadManager {
 
   async reveal(id: string): Promise<void> {
     const task = this.findById(id);
-    if (!task.filePath || !(await pathExists(task.filePath))) {
+    const filePath = this.localFilePath(task);
+    if (!(await pathExists(filePath))) {
       throw new ApiError('文件不存在或已被移动', 404, 'file_not_found');
     }
-    this.openNative('reveal', task.filePath);
+    this.openNative('reveal', filePath);
   }
 
   async openFile(id: string): Promise<void> {
     const task = this.findById(id);
-    if (!task.filePath || !(await pathExists(task.filePath))) {
+    const filePath = this.localFilePath(task);
+    if (!(await pathExists(filePath))) {
       throw new ApiError('文件不存在或已被移动', 404, 'file_not_found');
     }
-    this.openNative('open', task.filePath);
+    this.openNative('open', filePath);
+  }
+
+  /** Remote (WebDAV) files cannot be opened by the local shell. */
+  private localFilePath(task: InternalTask): string {
+    if (!task.filePath) {
+      throw new ApiError('文件不存在或已被移动', 404, 'file_not_found');
+    }
+    if (/^(davs?|https?):\/\//i.test(task.filePath)) {
+      throw new ApiError(
+        '该文件保存在网络位置，无法在本地打开',
+        400,
+        'remote_file',
+      );
+    }
+    return task.filePath;
   }
 
   refreshScheduler(): void {
@@ -576,7 +606,38 @@ export class DownloadManager {
     preferredPath?: string,
   ): PathPlan {
     const settings = getSettings();
-    const root = path.resolve(saveDir || settings.saveDir);
+    const target = (saveDir || settings.saveDir || '').trim();
+    const remote = parseRemoteTarget(target);
+    const folderParts = renderFolderTemplate(
+      settings.folderTemplate,
+      media,
+      ext,
+    );
+    const fileName = renderFileTemplate(
+      settings.fileNameTemplate,
+      media,
+      ext,
+    );
+
+    if (remote) {
+      const remoteUrl =
+        preferredPath && /^(davs?|https?):\/\//i.test(preferredPath)
+          ? preferredPath
+          : joinRemoteUrl(remote.baseUrl, folderParts, fileName);
+      const stageDir = path.join(DATA_DIR, 'webdav-cache', ...folderParts);
+      const stagedFile = path.join(stageDir, fileName);
+      return {
+        root: remote.baseUrl,
+        dir: stageDir,
+        fileName,
+        filePath: stagedFile,
+        remote,
+        remoteUrl,
+        relativePath: [...folderParts, fileName].filter(Boolean).join('/'),
+      };
+    }
+
+    const root = path.resolve(target || settings.saveDir);
     if (preferredPath) {
       const filePath = path.resolve(preferredPath);
       if (isInside(root, filePath)) {
@@ -585,28 +646,25 @@ export class DownloadManager {
           dir: path.dirname(filePath),
           fileName: path.basename(filePath),
           filePath,
+          relativePath: path.relative(root, filePath),
         };
       }
     }
-    const folderParts = renderFolderTemplate(
-      settings.folderTemplate,
-      media,
-      ext,
-    );
     const dir = path.resolve(root, ...folderParts);
     if (!isInside(root, dir)) {
       throw new ApiError('保存路径超出允许范围', 400, 'invalid_path');
     }
-    const fileName = renderFileTemplate(
-      settings.fileNameTemplate,
-      media,
-      ext,
-    );
     const filePath = path.join(dir, fileName);
     if (!isInside(root, filePath)) {
       throw new ApiError('文件名超出允许范围', 400, 'invalid_path');
     }
-    return { root, dir, fileName, filePath };
+    return {
+      root,
+      dir,
+      fileName,
+      filePath,
+      relativePath: path.relative(root, filePath),
+    };
   }
 
   private pump(): void {
@@ -759,7 +817,20 @@ export class DownloadManager {
 
     // A CDN-predicted extension (often .webp for images) must not make us skip
     // the original PDS blob, whose real extension may be .jpg/.png/.mp4.
-    if (
+    if (predicted.remote) {
+      if (
+        !task.force &&
+        settings.skipExisting &&
+        (await remoteFileExists(predicted.remoteUrl!, predicted.remote.auth))
+      ) {
+        return {
+          fileName: predicted.fileName,
+          relativePath: predicted.relativePath ?? predicted.fileName,
+          filePath: predicted.remoteUrl!,
+          skipped: true,
+        };
+      }
+    } else if (
       !task.force &&
       !media.blobCid &&
       settings.skipExisting &&
@@ -767,7 +838,9 @@ export class DownloadManager {
     ) {
       return {
         fileName: predicted.fileName,
-        relativePath: path.relative(predicted.root, predicted.filePath),
+        relativePath:
+          predicted.relativePath ??
+          path.relative(predicted.root, predicted.filePath),
         filePath: predicted.filePath,
         skipped: true,
       };
@@ -790,7 +863,29 @@ export class DownloadManager {
         if (candidate.kind === 'fallback' && index > 0) {
           task.note = '原始文件不可用，已回退到 Bluesky 转码版本';
         }
-        return await candidate.download();
+        const result = await candidate.download();
+        if (!predicted.remote) return result;
+
+        // Network save target: the file was downloaded into the local staging
+        // cache, upload it and remove the local copy.
+        task.detail = '正在上传到网络位置…';
+        await ensureRemoteDirectory(
+          remoteDirUrl(predicted.remoteUrl!),
+          predicted.remote.auth,
+        );
+        await uploadToRemote(
+          predicted.remoteUrl!,
+          result.filePath,
+          predicted.remote.auth,
+          task.controller?.signal,
+        );
+        await fsp.rm(result.filePath, { force: true }).catch(() => undefined);
+        return {
+          ...result,
+          filePath: predicted.remoteUrl!,
+          relativePath: predicted.relativePath ?? result.relativePath,
+          skipped: false,
+        };
       } catch (error) {
         if (task.pauseRequested || isAbortError(error)) throw error;
         lastError = error;
@@ -875,6 +970,7 @@ export class DownloadManager {
       await fsp.mkdir(plan.dir, { recursive: true });
 
       if (
+        !plan.remote &&
         !task.force &&
         getSettings().skipExisting &&
         (await pathExists(plan.filePath))
@@ -883,7 +979,7 @@ export class DownloadManager {
         task.tempPath = undefined;
         return {
           fileName: plan.fileName,
-          relativePath: path.relative(plan.root, plan.filePath),
+          relativePath: plan.relativePath ?? path.relative(plan.root, plan.filePath),
           filePath: plan.filePath,
           skipped: true,
         };
@@ -901,7 +997,8 @@ export class DownloadManager {
       task.detail = undefined;
       return {
         fileName: finalPath.fileName,
-        relativePath: path.relative(plan.root, finalPath.filePath),
+        relativePath:
+          plan.relativePath ?? path.relative(plan.root, finalPath.filePath),
         filePath: finalPath.filePath,
         skipped: false,
       };
@@ -968,6 +1065,7 @@ export class DownloadManager {
       await fsp.mkdir(plan.dir, { recursive: true });
 
       if (
+        !plan.remote &&
         !task.force &&
         getSettings().skipExisting &&
         (await pathExists(plan.filePath))
@@ -976,7 +1074,7 @@ export class DownloadManager {
         task.tempPath = undefined;
         return {
           fileName: plan.fileName,
-          relativePath: path.relative(plan.root, plan.filePath),
+          relativePath: plan.relativePath ?? path.relative(plan.root, plan.filePath),
           filePath: plan.filePath,
           skipped: true,
         };
@@ -994,7 +1092,8 @@ export class DownloadManager {
       task.detail = undefined;
       return {
         fileName: finalPath.fileName,
-        relativePath: path.relative(plan.root, finalPath.filePath),
+        relativePath:
+          plan.relativePath ?? path.relative(plan.root, finalPath.filePath),
         filePath: finalPath.filePath,
         skipped: false,
       };
@@ -1189,6 +1288,7 @@ export class DownloadManager {
     );
     await fsp.mkdir(plan.dir, { recursive: true });
     if (
+      !plan.remote &&
       !task.force &&
       getSettings().skipExisting &&
       (await pathExists(plan.filePath))
@@ -1201,7 +1301,7 @@ export class DownloadManager {
       task.tempDir = undefined;
       return {
         fileName: plan.fileName,
-        relativePath: path.relative(plan.root, plan.filePath),
+        relativePath: plan.relativePath ?? path.relative(plan.root, plan.filePath),
         filePath: plan.filePath,
         skipped: true,
       };
@@ -1224,7 +1324,8 @@ export class DownloadManager {
     task.detail = undefined;
     return {
       fileName: finalPath.fileName,
-      relativePath: path.relative(plan.root, finalPath.filePath),
+      relativePath:
+          plan.relativePath ?? path.relative(plan.root, finalPath.filePath),
       filePath: finalPath.filePath,
       skipped: false,
       note,

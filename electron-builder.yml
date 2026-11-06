@@ -33,4 +33,16 @@ portable:
   requestExecutionLevel: user
   unpackDirName: Bsky-Spider
 
+nsis:
+  oneClick: false
+  perMachine: true
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: false
+  createStartMenuShortcut: true
+  shortcutName: Bsky-Spider
+  uninstallDisplayName: Bsky-Spider
+  include: build/installer.nsh
+  artifactName: Bsky-Spider-${version}-win-x64-setup.${ext}
+
 publish: null

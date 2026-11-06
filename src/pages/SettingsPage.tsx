@@ -10,15 +10,12 @@ import {
   Switch,
 } from 'antd';
 import {
-  BgColorsOutlined,
   CheckCircleFilled,
   ClearOutlined,
   CloudDownloadOutlined,
   CloudServerOutlined,
   CodeOutlined,
-  DownloadOutlined,
   FolderOpenOutlined,
-  GlobalOutlined,
   InfoCircleOutlined,
   LoadingOutlined,
   ReloadOutlined,
@@ -52,11 +49,16 @@ import { useAuthStore } from '../stores/auth';
 import { api } from '../api';
 import { useDebouncedCallback } from '../hooks/useUiHooks';
 
+/** Save locations expressed as WebDAV / network URLs. */
+const isRemoteSaveDir = (value?: string): boolean =>
+  /^(davs?|https?):\/\//i.test(value || '');
+
 export const SettingsPage: React.FC = () => {
   const { message, modal } = App.useApp();
   const { t } = useI18n();
   const settings = useSettingsStore((state) => state.settings);
   const system = useSettingsStore((state) => state.system);
+  const isWindowsPlatform = (system?.platform ?? 'win32').startsWith('win32');
   const saving = useSettingsStore((state) => state.saving);
   const savedAt = useSettingsStore((state) => state.savedAt);
   const saveError = useSettingsStore((state) => state.saveError);
@@ -71,20 +73,20 @@ export const SettingsPage: React.FC = () => {
   const dirtyRef = useRef(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [latestVersion, setLatestVersion] = useState<string | null>(null);
+  const [saveDirInput, setSaveDirInput] = useState<string | null>(null);
 
   const checkUpdates = async () => {
     if (checkingUpdate) return;
     setCheckingUpdate(true);
     try {
       const result = await api.checkForUpdates();
+      setLatestVersion(result.latest);
       if (result.updateAvailable && result.latest) {
         modal.info({
           title: t('发现新版本 v{{version}}', { version: result.latest }),
           content: (
             <div className="space-y-2 pt-1 text-[12px] leading-relaxed text-slate-500">
-              <p>
-                {t('当前版本 v{{version}}', { version: result.current })}
-              </p>
               <p>{t('可在 GitHub Releases 页面下载新版本。')}</p>
               {result.url && (
                 <a
@@ -179,7 +181,11 @@ export const SettingsPage: React.FC = () => {
   const preview = draft
     ? previewTemplate(draft.fileNameTemplate, draft.folderTemplate)
     : null;
-  const separator = system?.platform.startsWith('win32') ? '\\' : '/';
+  const separator = isRemoteSaveDir(draft?.saveDir)
+    ? '/'
+    : system?.platform.startsWith('win32')
+      ? '\\'
+      : '/';
   const previewPath = draft
     ? `${draft.saveDir}${separator}${
         preview?.folder === t('（保存路径根目录）')
@@ -190,6 +196,10 @@ export const SettingsPage: React.FC = () => {
 
   const openSaveDir = async () => {
     if (!draft?.saveDir) return;
+    if (isWindowsPlatform && isRemoteSaveDir(draft.saveDir)) {
+      window.open(draft.saveDir, '_blank', 'noopener,noreferrer');
+      return;
+    }
     try {
       await api.openFolder(draft.saveDir);
     } catch (openError) {
@@ -256,7 +266,11 @@ export const SettingsPage: React.FC = () => {
   if (!draft) {
     return (
       <div className="page-shell">
-        <PageHeader title={t('设置')} icon={<SettingOutlined />} />
+        <PageHeader
+          title={t('设置')}
+          icon={<SettingOutlined />}
+          tone="settings"
+        />
         <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-10 text-sm text-slate-500 shadow-card">
           <LoadingOutlined className="text-brand-500" />
           {t('正在读取设置…')}
@@ -270,6 +284,7 @@ export const SettingsPage: React.FC = () => {
       <PageHeader
         title={t('设置')}
         icon={<SettingOutlined />}
+        tone="settings"
         extra={
           <div className="flex items-center gap-2 text-[11px] text-slate-400">
             {saving ? (
@@ -308,11 +323,7 @@ export const SettingsPage: React.FC = () => {
       )}
 
       <div className="space-y-4">
-        <SettingsSection
-          title={t('外观')}
-          icon={<BgColorsOutlined />}
-          description={t('选择界面主题，修改后自动保存')}
-        >
+        <SettingsSection title={t('外观')}>
           <SettingRow label={t('主题')}>
             <Select<ThemeName>
               value={draft.theme}
@@ -326,10 +337,7 @@ export const SettingsPage: React.FC = () => {
               popupMatchSelectWidth={false}
             />
           </SettingRow>
-          <SettingRow
-            label={t('语言')}
-            description={t('选择界面语言，修改后自动保存')}
-          >
+          <SettingRow label={t('语言')}>
             <Select<LanguageSetting>
               value={draft.language}
               onChange={(value) => setField('language', value)}
@@ -353,20 +361,40 @@ export const SettingsPage: React.FC = () => {
           </SettingRow>
         </SettingsSection>
 
-        <SettingsSection
-          title={t('下载设置')}
-          icon={<DownloadOutlined />}
-          description={t('控制文件保存位置、命名方式与下载行为')}
-        >
-          <SettingRow
-            label={t('保存路径')}
-            description={t('Bluesky 媒体文件将保存到这个文件夹。')}
-          >
+        <SettingsSection title={t('下载设置')}>
+          <SettingRow label={t('保存路径')}>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
-                readOnly
-                value={draft.saveDir}
+                readOnly={!isWindowsPlatform}
+                value={
+                  isWindowsPlatform
+                    ? saveDirInput ?? draft.saveDir
+                    : draft.saveDir
+                }
+                onChange={
+                  isWindowsPlatform
+                    ? (event) => setSaveDirInput(event.target.value)
+                    : undefined
+                }
+                onBlur={
+                  isWindowsPlatform
+                    ? () => {
+                        const next = (saveDirInput ?? draft.saveDir).trim();
+                        setSaveDirInput(null);
+                        if (next && next !== draft.saveDir) {
+                          setField('saveDir', next);
+                        }
+                      }
+                    : undefined
+                }
+                onPressEnter={
+                  isWindowsPlatform
+                    ? (event) => (event.target as HTMLInputElement).blur()
+                    : undefined
+                }
                 className="!rounded-xl !font-mono !text-xs"
+                spellCheck={false}
+                aria-label={t('保存路径')}
               />
               <div className="flex shrink-0 gap-2">
                 <Button
@@ -379,13 +407,23 @@ export const SettingsPage: React.FC = () => {
                 <Button
                   type="primary"
                   icon={<FolderOpenOutlined />}
-                  onClick={() => setPickerOpen(true)}
+                  onClick={() => {
+                    setSaveDirInput(null);
+                    setPickerOpen(true);
+                  }}
                   className="!rounded-xl"
                 >
                   {t('选择路径')}
                 </Button>
               </div>
             </div>
+            {isWindowsPlatform && isRemoteSaveDir(draft.saveDir) && (
+              <p className="mt-1.5 text-[10px] text-slate-400">
+                {t(
+                  '已设置网络位置：下载完成后会自动上传，文件不会保留在本地。',
+                )}
+              </p>
+            )}
             {draft.saveDir !== system?.defaultSaveDir && system?.defaultSaveDir && (
               <button
                 type="button"
@@ -448,12 +486,7 @@ export const SettingsPage: React.FC = () => {
             />
           </SettingRow>
 
-          <SettingRow
-            label={t('跳过相同文件')}
-            description={t(
-              '保存目录中已存在同名文件时跳过下载，避免重复占用空间。',
-            )}
-          >
+          <SettingRow label={t('跳过相同文件')}>
             <Switch
               checked={draft.skipExisting}
               onChange={(checked) => setField('skipExisting', checked)}
@@ -483,13 +516,7 @@ export const SettingsPage: React.FC = () => {
           </SettingRow>
         </SettingsSection>
 
-        <SettingsSection
-          title={t('网络')}
-          icon={<GlobalOutlined />}
-          description={t(
-            '当直连 Bluesky 较慢或无法访问时，可通过代理下载',
-          )}
-        >
+        <SettingsSection title={t('网络')}>
           <SettingRow
             label={t('启用代理')}
             description={t('代理会用于 Bluesky API 请求和媒体下载。')}
@@ -531,9 +558,7 @@ export const SettingsPage: React.FC = () => {
 
           <SettingRow
             label={t('使用系统代理')}
-            description={t(
-              '自动读取 Windows 系统代理，免去手动填写地址。支持 HTTPS_PROXY / HTTP_PROXY 环境变量。',
-            )}
+            description={t('自动读取当前系统代理。')}
           >
             <div>
               <Switch
@@ -573,7 +598,9 @@ export const SettingsPage: React.FC = () => {
                     <span className="rounded-full bg-white px-2 py-0.5 text-[9px] text-slate-400">
                       {system.systemProxySource === 'environment'
                         ? t('环境变量')
-                        : 'Windows'}
+                        : system.systemProxySource === 'linux'
+                          ? t('Linux 系统代理')
+                          : 'Windows'}
                     </span>
                   </div>
                 ) : (
@@ -646,11 +673,17 @@ export const SettingsPage: React.FC = () => {
           </SettingRow>
         </SettingsSection>
 
-        <SettingsSection
-          title={t('应用')}
-          icon={<SettingOutlined />}
-          description={t('通知、数据目录与运行环境')}
-        >
+        <SettingsSection title={t('应用')}>
+          <SettingRow
+            label={t('流畅模式')}
+            description={t('关闭所有动画效果，减少内存占用。')}
+          >
+            <Switch
+              aria-label={t('流畅模式')}
+              checked={draft.smoothMode}
+              onChange={(checked) => setField('smoothMode', checked)}
+            />
+          </SettingRow>
           <SettingRow label={t('下载完成提示')}>
             <Switch
               checked={draft.desktopNotifications}
@@ -668,9 +701,13 @@ export const SettingsPage: React.FC = () => {
               >
                 {t('检查更新')}
               </Button>
-              {system?.version && (
+              {latestVersion && (
                 <span className="text-[11px] text-slate-400">
-                  {t('当前版本 v{{version}}', { version: system.version })}
+                  {t('最新版本')}
+                  {': '}
+                  <span className="font-medium text-slate-500">
+                    {`v${latestVersion}`}
+                  </span>
                 </span>
               )}
             </div>
@@ -678,7 +715,7 @@ export const SettingsPage: React.FC = () => {
           <SettingRow
             label={t('应用数据')}
             description={t(
-              '登录凭据经 Windows DPAPI 加密后保存在本机，用于下次自动登录；当前会话保存在内存中。设置与任务记录保存在下方显示的数据目录。',
+              '设置与任务记录保存在下方显示的数据目录，数据目录位于 Bsky-Spider.exe 同级的 data 文件夹。',
             )}
           >
             <div className="flex flex-wrap items-center gap-2">
@@ -705,13 +742,6 @@ export const SettingsPage: React.FC = () => {
             <p className="mt-2 break-all font-mono text-[10px] text-slate-400">
               {system?.dataDir}
             </p>
-            <p className="mt-1 text-[10px] text-slate-400">
-              {system?.dataDirSource === 'user'
-                ? t('exe 同级目录不可写，已回退到用户数据目录')
-                : system?.dataDirSource === 'exe'
-                  ? t('数据目录位于 Bsky-Spider.exe 同级的 data 文件夹')
-                  : t('浏览器模式数据目录为项目下的 data 文件夹')}
-            </p>
           </SettingRow>
           <SettingRow
             label={t('恢复默认设置')}
@@ -737,17 +767,7 @@ export const SettingsPage: React.FC = () => {
             )}
           >
             <div className="grid gap-2 text-[11px] text-slate-500 sm:grid-cols-2">
-              <InfoLine label={t('版本')} value={`v${__APP_VERSION__}`} />
               <InfoLine label="Node.js" value={system?.nodeVersion || '—'} />
-              <InfoLine label={t('平台')} value={system?.platform || '—'} />
-              <InfoLine
-                label={t('视频引擎')}
-                value={system?.videoEngineName || t('内置')}
-              />
-              <InfoLine
-                label="AppView"
-                value={system?.appView || 'public.api.bsky.app'}
-              />
               <InfoLine label={t('API 服务')} value={window.location.origin} />
             </div>
           </SettingRow>
@@ -761,9 +781,16 @@ export const SettingsPage: React.FC = () => {
 
       <FolderPickerModal
         open={pickerOpen}
-        initialPath={draft.saveDir}
+        initialPath={
+          isWindowsPlatform && isRemoteSaveDir(draft.saveDir)
+            ? system?.defaultSaveDir || ''
+            : draft.saveDir
+        }
         onCancel={() => setPickerOpen(false)}
-        onSelect={(path) => setField('saveDir', path)}
+        onSelect={(path) => {
+          setSaveDirInput(null);
+          setField('saveDir', path);
+        }}
       />
     </div>
   );

@@ -26,6 +26,9 @@ let serverProcess = null;
 let serverPort = null;
 let appUrl = null;
 let quitting = false;
+let mainWindowRevealed = false;
+let splashProgress = 0;
+let splashLabel = '正在启动…';
 
 app.setName(APP_NAME);
 app.setAppUserModelId('app.bskyspider');
@@ -301,23 +304,42 @@ function createMainWindow() {
     }
   });
 
-  window.once('ready-to-show', () => {
-    window.show();
-    if (splashWindow && !splashWindow.isDestroyed()) splashWindow.destroy();
-    splashWindow = null;
-  });
+  window.once('ready-to-show', revealMainWindow);
+  // `ready-to-show` is not guaranteed on some Linux compositors; finish the
+  // splash as soon as the page has loaded instead of waiting forever.
+  window.webContents.once('did-finish-load', revealMainWindow);
+  window.webContents.on('did-fail-load', () => revealMainWindow());
 
   window.on('closed', () => {
     mainWindow = null;
+    mainWindowRevealed = false;
   });
 
   return window;
 }
 
+/**
+ * Shows the main window and removes the splash screen. Idempotent, and called
+ * from several events so a missed `ready-to-show` cannot leave the startup
+ * screen stuck at 92% (seen on some Linux desktops).
+ */
+function revealMainWindow() {
+  if (mainWindowRevealed) return;
+  mainWindowRevealed = true;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (!mainWindow.isVisible()) mainWindow.show();
+  }
+  setSplashProgress(100, '准备就绪');
+  setTimeout(() => {
+    if (splashWindow && !splashWindow.isDestroyed()) splashWindow.destroy();
+    splashWindow = null;
+  }, 220);
+}
+
 function showSplash() {
   splashWindow = new BrowserWindow({
     width: 460,
-    height: 310,
+    height: 330,
     frame: false,
     resizable: false,
     movable: true,
@@ -331,7 +353,28 @@ function showSplash() {
     },
   });
   splashWindow.loadFile(SPLASH).catch(() => undefined);
+  splashWindow.webContents.once('did-finish-load', () => {
+    // Replay the latest stage in case the page finished loading late.
+    setSplashProgress(Math.max(splashProgress, 8), splashLabel);
+  });
   splashWindow.once('ready-to-show', () => splashWindow.show());
+}
+
+/** Pushes the startup progress (0-100) into the splash page. */
+function setSplashProgress(percent, label) {
+  splashProgress = Math.max(splashProgress, Math.min(100, Number(percent) || 0));
+  if (typeof label === 'string' && label) splashLabel = label;
+  if (!splashWindow || splashWindow.isDestroyed()) return;
+  const contents = splashWindow.webContents;
+  if (!contents || contents.isDestroyed()) return;
+  contents
+    .executeJavaScript(
+      `window.setProgress && window.setProgress(${splashProgress}, ${JSON.stringify(
+        splashLabel,
+      )})`,
+      true,
+    )
+    .catch(() => undefined);
 }
 
 function accountsPath() {
@@ -810,6 +853,7 @@ function registerCredentialIpc() {
 async function boot() {
   showSplash();
   try {
+    setSplashProgress(12, '正在准备数据目录…');
     const activeDataDir = dataDir();
     appendStartupLog(
       `[data] using ${activeDataDir} (source=${dataDirSource()})`,
@@ -817,12 +861,24 @@ async function boot() {
     migrateLegacyData(activeDataDir);
     registerCredentialIpc();
     const savedCredentials = loadSavedCredentials();
+    setSplashProgress(28, '正在启动本地服务…');
     serverPort = await getFreePort();
     startServer(serverPort, savedCredentials);
+    setSplashProgress(45, '正在启动本地服务…');
     await waitForServer(serverPort);
+    setSplashProgress(68, '本地服务已就绪，正在加载界面…');
     appUrl = `http://127.0.0.1:${serverPort}`;
     mainWindow = createMainWindow();
-    await mainWindow.loadURL(appUrl);
+    setSplashProgress(78, '正在加载界面…');
+    const loaded = mainWindow.loadURL(appUrl).catch(() => undefined);
+    await Promise.race([
+      loaded,
+      new Promise((resolve) => setTimeout(resolve, 15000)),
+    ]);
+    setSplashProgress(92, '即将完成…');
+    // Safety net: some Linux compositors never emit `ready-to-show`, which
+    // used to leave the splash stuck at 92% until the app was restarted.
+    setTimeout(revealMainWindow, 2000);
   } catch (error) {
     if (splashWindow && !splashWindow.isDestroyed()) splashWindow.destroy();
     dialog.showErrorBox(

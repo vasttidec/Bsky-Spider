@@ -129,6 +129,8 @@ export interface AppSettings {
   proxyUrl: string;
   requestTimeout: number;
   desktopNotifications: boolean;
+  /** Disables animations and other non-essential effects to save resources. */
+  smoothMode: boolean;
 }
 
 export interface SystemInfo {
@@ -148,7 +150,7 @@ export interface SystemInfo {
   appView: string;
   /** Resolved system proxy, if one is configured. */
   systemProxyUrl: string | null;
-  systemProxySource: 'environment' | 'windows' | 'none';
+  systemProxySource: 'environment' | 'windows' | 'linux' | 'none';
   systemProxyNote?: string;
 }
 
@@ -171,14 +173,6 @@ export interface SessionResponse {
 
 export interface SearchHistoryResponse {
   history: string[];
-}
-
-export interface ApiErrorBody {
-  error: {
-    code: string;
-    message: string;
-    details?: unknown;
-  };
 }
 
 export interface TaskCounts {
@@ -222,11 +216,4 @@ export interface LoginRequest {
   identifier: string;
   password: string;
   pds?: string;
-}
-
-export interface PublicUser {
-  did: string;
-  handle: string;
-  displayName?: string;
-  avatar?: string;
 }

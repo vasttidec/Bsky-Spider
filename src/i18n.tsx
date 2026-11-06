@@ -500,8 +500,6 @@ const en: Record<string, string> = {
   '设置已保存': 'Settings saved',
   '保存失败': 'Save failed',
   '无法打开数据目录': 'Unable to open data directory',
-  '选择界面语言，修改后自动保存':
-    'Choose the interface language; changes save automatically',
   '下载完成提示': 'Download completion notice',
   '设置会自动保存，无需手动确认':
     'Settings save automatically; no manual confirmation needed',
@@ -665,7 +663,6 @@ const en: Record<string, string> = {
   '检查更新': 'Check for updates',
   '后续版本将关联 GitHub Releases 自动检查新版本。': 'A later version will check GitHub Releases for new releases.',
   '检查更新功能将在后续版本接入 GitHub Releases。': 'Update checks will be connected to GitHub Releases in a later version.',
-  '当前版本 v{{version}}': 'Current version v{{version}}',
 
   '保留登录凭证': 'Keep sign-in credentials',
   '已保留登录凭证': 'Sign-in credentials kept',
@@ -682,6 +679,32 @@ const en: Record<string, string> = {
   '可在 GitHub Releases 页面下载新版本。': 'You can download the new version from the GitHub Releases page.',
   '前往下载': 'Download now',
   '检查更新失败：{{error}}': 'Update check failed: {{error}}',
+
+  '当前平台没有系统代理设置': 'No system proxy is available on this platform',
+  '自动读取系统代理：Windows 系统设置或 HTTPS_PROXY / HTTP_PROXY 环境变量。': 'Detects the system proxy automatically: Windows settings or the HTTPS_PROXY / HTTP_PROXY environment variables.',
+
+  '最新版本': 'Latest version',
+  'Linux 系统代理': 'Linux system proxy',
+  'Linux 系统代理未启用': 'The Linux system proxy is not enabled',
+  'Linux 系统代理已启用，但未找到有效的 HTTP/HTTPS 代理地址': 'The Linux system proxy is enabled, but no valid HTTP/HTTPS proxy address was found',
+  '检测到系统 PAC 自动配置，当前版本不支持 PAC，请改用手动代理地址': 'A system PAC autoconfiguration was detected, but PAC is not supported; please use a manual proxy address',
+  '自动读取系统代理：Windows 系统设置、Linux 桌面（GNOME/KDE）或 HTTPS_PROXY / HTTP_PROXY 环境变量。': 'Detects the system proxy automatically: Windows settings, Linux desktop (GNOME/KDE), or the HTTPS_PROXY / HTTP_PROXY environment variables.',
+
+  '已设置网络位置：下载完成后会自动上传，文件不会保留在本地。': 'Network location selected: files are uploaded after downloading and are not kept locally.',
+  '该文件保存在网络位置，无法在本地打开': 'This file is stored on a network location and cannot be opened locally.',
+  '连接网络位置超时，请检查地址与网络': 'Timed out connecting to the network location; check the address and network.',
+  '上传到网络位置超时，请检查地址与网络': 'Timed out uploading to the network location; check the address and network.',
+  '无法创建网络位置目录，请确认地址指向一个可写的 WebDAV 目录': 'Could not create the network folder; make sure the address points to a writable WebDAV directory.',
+
+  'Bluesky 媒体文件将保存到这个位置，支持本地目录、Windows 网络共享（\\\\server\\share）。': 'Bluesky media files are saved to this location; local folders and Windows network shares (\\\\server\\share) are supported.',
+  'Bluesky 媒体文件将保存到这个位置。': 'Bluesky media files are saved to this location.',
+
+  '流畅模式': 'Smooth mode',
+  '关闭所有动画效果，降低轮询与特效开销，在不影响功能的前提下减少内存占用；默认关闭。': 'Turns off every animation and reduces polling and effect overhead to lower memory usage without affecting functionality; off by default.',
+
+  '自动读取当前系统代理。': 'Automatically reads the current system proxy.',
+  '设置与任务记录保存在下方显示的数据目录，数据目录位于 Bsky-Spider.exe 同级的 data 文件夹。': 'Settings and task records are stored in the data directory shown below, which is the data folder next to Bsky-Spider.exe.',
+  '关闭所有动画效果，减少内存占用。': 'Turns off all animations to reduce memory usage.',
 };
 
 /**
@@ -748,22 +771,6 @@ export function detectSystemLanguage(): UiLanguage {
   if (language === 'ru' || language.startsWith('ru-')) return 'ru';
   if (language === 'en' || language.startsWith('en-')) return 'en';
   return 'en';
-}
-
-export function resolveLanguage(setting: LanguageSetting): UiLanguage {
-  if (
-    setting === 'zh-CN' ||
-    setting === 'zh-TW' ||
-    setting === 'en' ||
-    setting === 'ru'
-  ) {
-    return setting;
-  }
-  return detectSystemLanguage();
-}
-
-export function getActiveLanguage(): UiLanguage {
-  return activeLanguage;
 }
 
 export function translate(

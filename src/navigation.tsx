@@ -47,10 +47,6 @@ export const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export function navById(id: RouteId): NavItem {
-  return NAV_ITEMS.find((item) => item.id === id) || NAV_ITEMS[0];
-}
-
 export function routeFromHash(hash: string): RouteId {
   const clean = hash.replace(/^#\/?/, '').split('?')[0];
   if (clean === 'downloads' || clean === 'settings' || clean === 'about') {

@@ -202,6 +202,7 @@ export const DownloadsPage: React.FC = () => {
       <PageHeader
         title={t('下载')}
         icon={<DownloadOutlined />}
+        tone="downloads"
         extra={
           <div className="flex items-center gap-2">
             <Tooltip title={t('刷新任务')}>
@@ -217,7 +218,10 @@ export const DownloadsPage: React.FC = () => {
             <Button
               icon={<FolderOpenOutlined />}
               onClick={openSaveDir}
-              disabled={!settings?.saveDir}
+              disabled={
+                !settings?.saveDir ||
+                /^(davs?|https?):\/\//i.test(settings.saveDir)
+              }
               className="!rounded-xl"
             >
               {t('打开文件夹')}

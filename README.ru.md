@@ -4,8 +4,8 @@
 
 **Загрузчик медиа Bluesky**
 
-> Текущая версия: 1.2.0
-> Скачать: https://github.com/vasttidec/Bsky-Spider/releases/tag/v1.2.0
+> Текущая версия: 1.2.5
+> Скачать: https://github.com/vasttidec/Bsky-Spider/releases/tag/v1.2.5
 
 Bsky-Spider создан на платформе DeepSeek Harness: весь проект разработан с помощью модели DeepSeek-V4.1-Flash-1017 с уровнем рассуждений Max.
 
@@ -112,15 +112,20 @@ CDN Bluesky конвертирует изображения в другой фо
 
 ### Способ 1: ZIP-версия без установки (рекомендуется)
 
-1. Скачайте из репозитория `Bsky-Spider-1.2.0-win-x64.zip` (или используйте файл с тем же именем в локальной папке `release/`) и распакуйте;
+1. Скачайте из репозитория `Bsky-Spider-1.2.5-win-x64.zip` (или используйте файл с тем же именем в локальной папке `release/`) и распакуйте;
 2. перейдите в папку `Bsky-Spider` и дважды щёлкните **`Bsky-Spider.exe`**;
 3. установка не требуется, Node.js и FFmpeg тоже не нужны.
 
-SHA256 (ZIP): `3914EA8259D41FF04F3F349E3AB9CB8FDCBB4981411F28CE70BF01783DE5D8B0`
+SHA256 (ZIP): `4069D3F8037BF166FEDC0BE9F21EB9850D1CFC38005FC51A2AC2C13E37003F6B`
 
 - если Windows сообщает «Файл получен из интернета», щёлкните ZIP правой кнопкой → Свойства → установите флажок «Разблокировать» и только затем распакуйте;
 - не запускайте exe двойным щелчком прямо в окне предпросмотра архива;
 - при сбое запуска смотрите `data\server.log` рядом с exe (если туда нельзя писать — `%APPDATA%\Bsky-Spider\data\server.log`).
+
+### Другие пакеты
+
+- **Установщик Windows**: `Bsky-Spider-1.2.5-win-x64-setup.exe` — устанавливается в `C:\Program Files\Bsky-Spider` (для всех пользователей, требуются права администратора); на последней странице можно создать ярлык на рабочем столе и запустить приложение.
+- **Linux**: `Bsky-Spider-1.2.5.AppImage` и `Bsky-Spider-1.2.5.deb` (x64); папка загрузок по умолчанию — `~/Downloads/Bsky-Spider`.
 
 ### Способ 2: запуск из исходников
 
@@ -145,8 +150,8 @@ npm run dev
 ### Пересборка
 
 ```bash
-npm run build:exe       # release/Bsky-Spider-1.2.0-portable.exe
-npm run build:zip       # release/Bsky-Spider-1.2.0-win-x64.zip (включая каталог win-unpacked)
+npm run build:exe       # release/Bsky-Spider-1.2.5-portable.exe
+npm run build:zip       # release/Bsky-Spider-1.2.5-win-x64.zip (включая каталог win-unpacked)
 ```
 
 Внутри `build:zip` выполняются `build:exe:dir` (создаёт `release/win-unpacked`) и `scripts/build-zip.ps1`.
@@ -371,6 +376,7 @@ Blob на PDS автора мог быть удалён или PDS не разр
 
 ## Журнал изменений
 
+- **1.2.5**: сборки для Linux (`.AppImage` и `.deb`) и установщик Windows; плавный режим для слабых компьютеров; индикатор прогресса запуска и исправление зависания на 92% при первом запуске в Linux; определение системного прокси в Linux; обновлённое оформление настроек и цветные значки; сетевые папки сохранения в Windows; оптимизация производительности и очистка кода.
 - **1.2.0**: первая публично выпущенная версия Bsky-Spider.
 
 ## Благодарности и лицензия

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from 'antd';
 import {
-  ArrowRightOutlined,
   CloudDownloadOutlined,
   ExportOutlined,
   KeyOutlined,
@@ -105,28 +104,5 @@ export const LoginHero: React.FC = () => {
         </div>
       </div>
     </section>
-  );
-};
-
-export const LoginHint: React.FC = () => {
-  const { t } = useI18n();
-  const openLogin = useAuthStore((state) => state.openLogin);
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-brand-100 bg-brand-50/70 px-4 py-3">
-      <p className="text-xs leading-relaxed text-brand-800">
-        <LockOutlined className="mr-1.5" />
-        {t('搜索与下载功能需要登录。Bsky-Spider 只读取公开媒体，不修改账号。')}
-      </p>
-      <Button
-        size="small"
-        type="primary"
-        ghost
-        onClick={openLogin}
-        className="!shrink-0 !rounded-lg"
-      >
-        {t('登录')}
-        <ArrowRightOutlined className="ml-1" />
-      </Button>
-    </div>
   );
 };

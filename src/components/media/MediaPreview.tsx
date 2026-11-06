@@ -8,7 +8,7 @@ import {
   PictureOutlined,
 } from '@ant-design/icons';
 import type { MediaItem } from '../../../shared/types';
-import { formatDate, mediaTypeLabel } from '../../utils/format';
+import { formatDate } from '../../utils/format';
 import { UserAvatar } from '../Brand';
 import { MediaThumb } from './MediaThumb';
 import { translateError, useI18n } from '../../i18n';

@@ -10,6 +10,12 @@ dayjs.extend(duration);
 dayjs.extend(relativeTime);
 dayjs.locale('zh-cn');
 
+// Linux compositors can stutter on heavy backdrop blurs (software or weak
+// GPUs), so the CSS layer disables them when this class is present.
+if (navigator.userAgent.includes('Linux')) {
+  document.documentElement.classList.add('platform-linux');
+}
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <App />,
 );

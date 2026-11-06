@@ -1,6 +1,6 @@
 {
   "name": "bsky-spider",
-  "version": "1.2.0",
+  "version": "1.2.5",
   "private": true,
   "description": "Bsky-Spider — a local Bluesky media downloader",
   "author": {
@@ -38,7 +38,9 @@
     "test:ui": "node scripts/test-ui.mjs",
     "screenshot": "node scripts/screenshot.mjs",
     "preview": "npm run build && npm run start",
-    "test:history": "tsx scripts/test-history.ts"
+    "test:history": "tsx scripts/test-history.ts",
+    "test:webdav": "tsx scripts/test-webdav.ts",
+    "build:setup": "npm run build && electron-builder --win nsis --x64"
   },
   "dependencies": {
     "@ant-design/icons": "^5.6.1",

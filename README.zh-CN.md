@@ -4,8 +4,8 @@
 
 **Bluesky 媒体下载器**
 
-> 当前版本：1.2.0
-> 下载链接：https://github.com/vasttidec/Bsky-Spider/releases/tag/v1.2.0
+> 当前版本：1.2.5
+> 下载链接：https://github.com/vasttidec/Bsky-Spider/releases/tag/v1.2.5
 
 Bsky-Spider 以 DeepSeek Harness 为框架，全程使用模型 DeepSeek-V4.1-Flash-1017 构建，推理等级配置为 Max。
 
@@ -112,15 +112,20 @@ Bluesky 的 CDN 对图片做格式转换，对视频提供 HLS 转码（常见�
 
 ### 方式一：ZIP 免安装版（推荐）
 
-1. 从仓库下载 `Bsky-Spider-1.2.0-win-x64.zip`（或直接使用本机 `release/` 中的同名文件）并解压；
+1. 从仓库下载 `Bsky-Spider-1.2.5-win-x64.zip`（或直接使用本机 `release/` 中的同名文件）并解压；
 2. 进入 `Bsky-Spider` 文件夹，双击 **`Bsky-Spider.exe`**；
 3. 无需安装，也无需 Node.js 或 FFmpeg。
 
-SHA256（ZIP）：`3914EA8259D41FF04F3F349E3AB9CB8FDCBB4981411F28CE70BF01783DE5D8B0`
+SHA256（ZIP）：`4069D3F8037BF166FEDC0BE9F21EB9850D1CFC38005FC51A2AC2C13E37003F6B`
 
 - 如果 Windows 提示「文件来自网络」，先右键 ZIP → 属性 → 勾选「解除锁定」，再解压；
 - 不要在压缩包预览窗口中直接双击 exe；
 - 启动失败时查看 exe 同级 `data\server.log`（不可写时为 `%APPDATA%\Bsky-Spider\data\server.log`）。
+
+### 其他安装包
+
+- **Windows 安装程序**：`Bsky-Spider-1.2.5-win-x64-setup.exe`，默认安装到 `C:\Program Files\Bsky-Spider`（全机安装，需要管理员权限），安装最后一页可选择创建桌面快捷方式与立即启动。
+- **Linux**：`Bsky-Spider-1.2.5.AppImage` 与 `Bsky-Spider-1.2.5.deb`（x64），默认下载目录为 `~/Downloads/Bsky-Spider`。
 
 ### 方式二：从源码运行
 
@@ -145,8 +150,8 @@ npm run dev
 ### 重新打包
 
 ```bash
-npm run build:exe       # release/Bsky-Spider-1.2.0-portable.exe
-npm run build:zip       # release/Bsky-Spider-1.2.0-win-x64.zip（含 win-unpacked 目录）
+npm run build:exe       # release/Bsky-Spider-1.2.5-portable.exe
+npm run build:zip       # release/Bsky-Spider-1.2.5-win-x64.zip（含 win-unpacked 目录）
 ```
 
 `build:zip` 内部会执行 `build:exe:dir`（生成 `release/win-unpacked`）与 `scripts/build-zip.ps1`。
@@ -371,6 +376,7 @@ Bluesky 的 HLS 转码通常只提供 360p / 720p 档位。Bsky-Spider 会优先
 
 ## 更新日志
 
+- **1.2.5**：新增 Linux 版本（`.AppImage` 与 `.deb`）与 Windows 安装程序；新增流畅模式（适配低配置电脑）；启动进度条并修复 Linux 首次启动卡在 92% 的问题；Linux 系统代理检测；设置页布局与彩色图标优化；Windows 保存路径支持网络位置；性能优化与代码清理。
 - **1.2.0**：第一个公开发布的 Bsky-Spider 版本。
 
 ## 开源致谢与许可

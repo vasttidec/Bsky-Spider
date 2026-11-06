@@ -163,6 +163,9 @@ const ThemedApp: React.FC = () => {
   const themeName = useSettingsStore(
     (state) => state.settings?.theme ?? 'system',
   );
+  const smoothMode = useSettingsStore(
+    (state) => state.settings?.smoothMode ?? false,
+  );
   const resolvedTheme = resolveThemeName(themeName, systemPrefersDark);
   const theme = useMemo(
     () => getThemeConfig(resolvedTheme),
@@ -181,6 +184,10 @@ const ThemedApp: React.FC = () => {
   useEffect(() => {
     document.documentElement.dataset.theme = resolvedTheme;
   }, [resolvedTheme]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('smooth-mode', smoothMode);
+  }, [smoothMode]);
 
   return (
     <ConfigProvider

@@ -60,7 +60,6 @@ export const ru: LocaleDictionary = {
   "Choose a user to open their media page": "Выберите пользователя, чтобы открыть его медиастраницу",
   "Choose folder": "Выбрать папку",
   "Choose save folder": "Выбрать папку сохранения",
-  "Choose the interface language; changes save automatically": "Выберите язык интерфейса; изменения сохраняются автоматически",
   "Clear": "Очистить",
   "Clear auto-login": "Удалить авто-вход",
   "Clear completed records": "Очистить завершённые",
@@ -433,7 +432,6 @@ export const ru: LocaleDictionary = {
   "Check for updates": "Проверить обновления",
   "A later version will check GitHub Releases for new releases.": "В следующих версиях появится проверка GitHub Releases.",
   "Update checks will be connected to GitHub Releases in a later version.": "Проверка обновлений будет подключена к GitHub Releases позже.",
-  "Current version v{{version}}": "Текущая версия v{{version}}",
 
   "Keep sign-in credentials": "Хранить учётные данные",
   "Sign-in credentials kept": "Учётные данные сохранены",
@@ -449,4 +447,30 @@ export const ru: LocaleDictionary = {
   "You can download the new version from the GitHub Releases page.": "Новую версию можно скачать на странице GitHub Releases.",
   "Download now": "Скачать",
   "Update check failed: {{error}}": "Не удалось проверить обновления: {{error}}",
+
+  "当前平台没有系统代理设置": "На этой платформе нет системного прокси",
+  "自动读取系统代理：Windows 系统设置或 HTTPS_PROXY / HTTP_PROXY 环境变量。": "Автоматически определяет системный прокси: настройки Windows или переменные HTTPS_PROXY / HTTP_PROXY.",
+
+  "最新版本": "Последняя версия",
+  "Linux 系统代理": "Системный прокси Linux",
+  "Linux 系统代理未启用": "Системный прокси Linux не включён",
+  "Linux 系统代理已启用，但未找到有效的 HTTP/HTTPS 代理地址": "Системный прокси Linux включён, но действительный адрес HTTP/HTTPS-прокси не найден",
+  "检测到系统 PAC 自动配置，当前版本不支持 PAC，请改用手动代理地址": "Обнаружена автоконфигурация PAC; текущая версия не поддерживает PAC, укажите прокси вручную",
+  "自动读取系统代理：Windows 系统设置、Linux 桌面（GNOME/KDE）或 HTTPS_PROXY / HTTP_PROXY 环境变量。": "Автоматически определяет системный прокси: настройки Windows, рабочий стол Linux (GNOME/KDE) или переменные HTTPS_PROXY / HTTP_PROXY.",
+
+  "Bluesky media files are saved to this location. Local folders, Windows network shares (\\\\server\\share) and WebDAV (davs://user:pass@host/path) are supported.": "Медиафайлы Bluesky сохраняются в это место. Поддерживаются локальные папки, сетевые ресурсы Windows (\\\\server\\share) и WebDAV (davs://user:pass@host/path).",
+  "Network location selected: files are uploaded after downloading and are not kept locally.": "Выбрано сетевое расположение: файлы загружаются после скачивания и не сохраняются локально.",
+  "This file is stored on a network location and cannot be opened locally.": "Этот файл находится в сетевом расположении и не может быть открыт локально.",
+  "Timed out connecting to the network location; check the address and network.": "Истекло время подключения к сетевому расположению; проверьте адрес и сеть.",
+  "Timed out uploading to the network location; check the address and network.": "Истекло время загрузки в сетевое расположение; проверьте адрес и сеть.",
+  "Could not create the network folder; make sure the address points to a writable WebDAV directory.": "Не удалось создать сетевую папку; убедитесь, что адрес указывает на доступный для записи каталог WebDAV.",
+
+  "Bluesky media files are saved to this location.": "Медиафайлы Bluesky сохраняются в это место.",
+
+  "Smooth mode": "Плавный режим",
+  "Turns off every animation and reduces polling and effect overhead to lower memory usage without affecting functionality; off by default.": "Отключает все анимации и снижает нагрузку от опроса и эффектов, уменьшая потребление памяти без потери функций; по умолчанию выключено.",
+
+  "Automatically reads the current system proxy.": "Автоматически считывает текущий системный прокси.",
+  "Settings and task records are stored in the data directory shown below, which is the data folder next to Bsky-Spider.exe.": "Настройки и записи задач хранятся в каталоге данных, показанном ниже: это папка data рядом с Bsky-Spider.exe.",
+  "Turns off all animations to reduce memory usage.": "Отключает все анимации, чтобы снизить потребление памяти.",
 };

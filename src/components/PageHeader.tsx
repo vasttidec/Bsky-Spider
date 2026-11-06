@@ -8,6 +8,8 @@ interface PageHeaderProps {
   icon: React.ReactNode;
   extra?: React.ReactNode;
   eyebrow?: string;
+  /** Colour accent shared with the sidebar navigation icons. */
+  tone?: 'home' | 'downloads' | 'settings' | 'about';
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
@@ -16,6 +18,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   icon,
   extra,
   eyebrow,
+  tone,
 }) => {
   const { t } = useI18n();
   return (
@@ -23,7 +26,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       <div className="flex min-w-0 items-center gap-4">
         <span
           aria-hidden
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-brand-500 bg-white text-[22px] text-brand-500 shadow-[0_8px_20px_-12px_rgba(17,133,254,0.8)]"
+          className={clsx(
+            'flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 bg-white text-[22px] shadow-[0_8px_20px_-12px_rgba(17,133,254,0.8)]',
+            tone ? `page-icon-${tone}` : 'page-icon-default',
+          )}
         >
           {icon}
         </span>

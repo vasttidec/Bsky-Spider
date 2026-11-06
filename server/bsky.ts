@@ -59,14 +59,6 @@ interface RawImageView {
   aspectRatio?: { width: number; height: number };
 }
 
-interface RawVideoView {
-  cid?: string;
-  playlist?: string;
-  thumbnail?: string;
-  alt?: string;
-  aspectRatio?: { width: number; height: number };
-}
-
 interface RawEmbed {
   $type?: string;
   cid?: string;
@@ -726,14 +718,3 @@ export async function deleteRemoteSession(
   }
 }
 
-export async function validateSession(
-  session: SessionRecord,
-): Promise<boolean> {
-  try {
-    const profile = await getProfileWithSession(session, session.did);
-    session.profile = profile;
-    return true;
-  } catch {
-    return false;
-  }
-}

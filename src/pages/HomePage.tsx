@@ -204,6 +204,7 @@ export const HomePage: React.FC = () => {
       <PageHeader
         title={t('主页')}
         icon={<HomeFilled />}
+        tone="home"
         extra={
           user ? (
             <span className="hidden items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-600 sm:inline-flex">

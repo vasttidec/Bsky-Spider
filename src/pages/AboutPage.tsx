@@ -42,7 +42,11 @@ export const AboutPage: React.FC = () => {
   const { t } = useI18n();
   return (
     <div className="page-shell">
-      <PageHeader title={t('关于')} icon={<InfoCircleFilled />} />
+      <PageHeader
+        title={t('关于')}
+        icon={<InfoCircleFilled />}
+        tone="about"
+      />
 
       <section className="about-hero">
         <div className="about-hero-glow" aria-hidden />
@@ -203,7 +207,7 @@ export const AboutPage: React.FC = () => {
         <p className="inline-flex items-center gap-1">
           {t('作者')}:{' '}
           <a
-            href="https://github.com/vasttidec"
+            href="https://github.com/vasttidec/Bsky-Spider"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 text-brand-500 transition hover:text-brand-700"

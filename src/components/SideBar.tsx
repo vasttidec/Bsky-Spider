@@ -158,7 +158,7 @@ export const SideBar: React.FC<SideBarProps> = ({ route, navigate }) => {
                     aria-current={active ? 'page' : undefined}
                     onClick={() => navigate(item.id)}
                     className={clsx(
-                      'group relative flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[14px] font-medium transition-all duration-200',
+                      'nav-item group relative flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[14px] font-medium transition-all duration-200',
                       active
                         ? 'bg-white text-brand-600 shadow-[0_10px_30px_-16px_rgba(0,30,80,0.8)]'
                         : 'text-white/85 hover:bg-white/10 hover:text-white',
@@ -167,6 +167,7 @@ export const SideBar: React.FC<SideBarProps> = ({ route, navigate }) => {
                     <span
                       className={clsx(
                         'flex h-5 w-5 items-center justify-center text-[17px] transition-transform duration-200',
+                        `nav-icon-${item.id}`,
                         active ? 'scale-105' : 'group-hover:scale-105',
                       )}
                     >

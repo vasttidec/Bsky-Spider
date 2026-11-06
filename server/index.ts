@@ -32,6 +32,7 @@ import {
   WEB_DIR,
 } from './config';
 import { detectSystemProxy } from './proxy';
+import { isRemoteTarget } from './remote';
 import { downloads } from './downloads';
 import {
   assertDirectoryWritable,
@@ -179,7 +180,12 @@ app.put(
   wrap(async (req, res) => {
     const body = (req.body || {}) as Partial<AppSettings>;
     if (typeof body.saveDir === 'string' && body.saveDir.trim()) {
-      await assertDirectoryWritable(path.resolve(body.saveDir.trim()));
+      const target = body.saveDir.trim();
+      // Network targets (WebDAV URLs) are validated by the download engine;
+      // local folders and Windows UNC shares are checked for writability.
+      if (!isRemoteTarget(target)) {
+        await assertDirectoryWritable(path.resolve(target));
+      }
     }
     const updated = await updateSettings(body);
     downloads.refreshScheduler();

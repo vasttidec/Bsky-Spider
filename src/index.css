@@ -40,10 +40,8 @@ body {
   color: var(--ink);
   background: var(--canvas);
   font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei',
-    'PingFang SC', sans-serif;
+    system-ui, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
 
@@ -62,7 +60,7 @@ a {
 }
 
 code {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-family: ui-monospace, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
 /* ---------- App frame ---------- */
@@ -2469,4 +2467,104 @@ html[data-theme='cyberpunk'] * {
 
 html[data-theme='cyberpunk'] * {
   scrollbar-color: rgba(255, 56, 207, 0.42) rgba(8, 4, 16, 0.5);
+}
+
+/* ---------- Linux performance ---------- */
+/*
+ * Backdrop blur repaints large areas on every scroll/animation and is
+ * noticeably slow on Linux with software or weak GPUs. Panels keep their
+ * translucent backgrounds, they just stop sampling the backdrop.
+ */
+html.platform-linux *,
+html.platform-linux *::before,
+html.platform-linux *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ---------- Smooth mode ---------- */
+/*
+ * The "流畅模式" switch turns off animations, transitions and backdrop blurs
+ * globally. Fewer compositor layers means less GPU work and a smaller memory
+ * footprint, while every control keeps working exactly the same.
+ */
+html.smooth-mode *,
+html.smooth-mode *::before,
+html.smooth-mode *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ---------- Sidebar icon colours ---------- */
+.nav-icon-home {
+  color: #38bdf8;
+}
+.nav-icon-downloads {
+  color: #34d399;
+}
+.nav-icon-settings {
+  color: #fbbf24;
+}
+.nav-icon-about {
+  color: #a78bfa;
+}
+.app-sidebar .nav-item[aria-current='page'] .nav-icon-home {
+  color: #0284c7;
+}
+.app-sidebar .nav-item[aria-current='page'] .nav-icon-downloads {
+  color: #047857;
+}
+.app-sidebar .nav-item[aria-current='page'] .nav-icon-settings {
+  color: #b45309;
+}
+.app-sidebar .nav-item[aria-current='page'] .nav-icon-about {
+  color: #6d28d9;
+}
+
+/* ---------- Template variable panel ---------- */
+/* Align the variable list with the row label instead of the input column. */
+@media (min-width: 768px) {
+  .template-vars {
+    width: calc(100% + 220px + 1.5rem);
+    margin-left: calc(-220px - 1.5rem);
+  }
+}
+
+/* ---------- Settings section titles ---------- */
+/* Section titles sit above their cards; the cards themselves keep no header. */
+.settings-block-title {
+  margin: 0 0 10px 2px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Page header icon accents ---------- */
+/* Same colour families as the sidebar navigation icons. */
+.page-icon-default {
+  border-color: #1185fe;
+  color: #1185fe;
+}
+.page-icon-home {
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+}
+.page-icon-downloads {
+  border-color: #10b981;
+  color: #10b981;
+}
+.page-icon-settings {
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+.page-icon-about {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
 }

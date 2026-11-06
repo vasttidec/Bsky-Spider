@@ -5,6 +5,7 @@ import type {
   TaskBatchAction,
   TaskCounts,
 } from '../../shared/types';
+import { tasksPayloadEqual } from '../utils/taskEquality';
 
 interface TasksState {
   tasks: DownloadTask[];
@@ -45,6 +46,23 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     set({ refreshing: true, ...(silent ? {} : { loading: true }) });
     try {
       const data = await api.getTasks();
+      const current = get();
+      if (
+        current.initialized &&
+        tasksPayloadEqual(
+          {
+            tasks: current.tasks,
+            counts: current.counts,
+            concurrency: current.concurrency,
+          },
+          data,
+        )
+      ) {
+        // Nothing changed: keep the existing task objects so the list does
+        // not re-render on every polling tick.
+        set({ error: null, loading: false, refreshing: false });
+        return;
+      }
       set({
         tasks: data.tasks,
         counts: data.counts,

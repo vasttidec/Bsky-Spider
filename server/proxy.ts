@@ -1,4 +1,7 @@
 import { execFile } from 'node:child_process';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { promisify } from 'node:util';
 import { getSettings } from './storage';
 
@@ -9,7 +12,7 @@ const REGISTRY_KEY =
 
 export interface SystemProxyInfo {
   url: string | null;
-  source: 'environment' | 'windows' | 'none';
+  source: 'environment' | 'windows' | 'linux' | 'none';
   note?: string;
 }
 
@@ -80,9 +83,119 @@ function parseRegistryOutput(
   return values;
 }
 
+/**
+ * Detect the proxy configured in the desktop environment. GNOME (and GNOME
+ * based distributions such as Zorin OS / Ubuntu) stores it in gsettings, KDE
+ * in ~/.config/kioslaverc. Environment variables are handled by the caller.
+ */
+async function gsettingsGet(
+  schema: string,
+  key: string,
+): Promise<string | null> {
+  try {
+    const { stdout } = await execFileAsync('gsettings', ['get', schema, key], {
+      timeout: 3_000,
+      encoding: 'utf8',
+    });
+    const value = stdout.trim();
+    if (!value) return null;
+    const single = /^'(.*)'$/s.exec(value);
+    if (single) return single[1];
+    const double = /^"(.*)"$/s.exec(value);
+    if (double) return double[1];
+    if (value.startsWith('@')) return null;
+    return value;
+  } catch {
+    // gsettings is missing or the schema is not installed.
+    return null;
+  }
+}
+
+async function gnomeProxy(): Promise<SystemProxyInfo | null> {
+  const mode = await gsettingsGet('org.gnome.system.proxy', 'mode');
+  if (mode === null) return null;
+  if (mode === 'auto') {
+    return {
+      url: null,
+      source: 'none',
+      note: '检测到系统 PAC 自动配置，当前版本不支持 PAC，请改用手动代理地址',
+    };
+  }
+  if (mode !== 'manual') {
+    return { url: null, source: 'none', note: 'Linux 系统代理未启用' };
+  }
+
+  const readScope = async (
+    scope: 'http' | 'https' | 'socks',
+  ): Promise<string | null> => {
+    const host = await gsettingsGet(
+      `org.gnome.system.proxy.${scope}`,
+      'host',
+    );
+    if (!host) return null;
+    const port = await gsettingsGet(
+      `org.gnome.system.proxy.${scope}`,
+      'port',
+    );
+    return normalizeProxyValue(port ? `${host}:${port}` : host);
+  };
+
+  const https = await readScope('https');
+  const http = await readScope('http');
+  const proxy = https || http;
+  if (proxy) return { url: proxy, source: 'linux' };
+
+  const socks = await readScope('socks');
+  if (socks) {
+    return {
+      url: null,
+      source: 'none',
+      note: '系统代理只配置了 SOCKS，Bsky-Spider 目前仅支持 HTTP/HTTPS 代理',
+    };
+  }
+  return {
+    url: null,
+    source: 'none',
+    note: 'Linux 系统代理已启用，但未找到有效的 HTTP/HTTPS 代理地址',
+  };
+}
+
+async function kdeProxy(): Promise<SystemProxyInfo | null> {
+  try {
+    const file = path.join(os.homedir(), '.config', 'kioslaverc');
+    const text = await fs.readFile(file, 'utf8');
+    const section = text
+      .split(/^\[/m)
+      .find((part) => part.startsWith('Proxy Settings]'));
+    if (!section) return null;
+    const get = (key: string): string =>
+      new RegExp(`^${key}=(.*)$`, 'm').exec(section)?.[1]?.trim() ?? '';
+    if (get('ProxyType') !== '1') return null;
+    const proxy = normalizeProxyValue(
+      get('httpsProxy') || get('httpProxy'),
+    );
+    if (proxy) return { url: proxy, source: 'linux' };
+    return {
+      url: null,
+      source: 'none',
+      note: 'Linux 系统代理已启用，但未找到有效的 HTTP/HTTPS 代理地址',
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function detectLinuxProxy(): Promise<SystemProxyInfo> {
+  const gnome = await gnomeProxy();
+  if (gnome) return gnome;
+  const kde = await kdeProxy();
+  if (kde) return kde;
+  return { url: null, source: 'none', note: '当前平台没有系统代理设置' };
+}
+
 async function detectWindowsProxy(): Promise<SystemProxyInfo> {
   if (process.platform !== 'win32') {
-    return { url: null, source: 'none', note: '当前平台没有 Windows 系统代理设置' };
+    return { url: null, source: 'none', note: '当前平台没有系统代理设置' };
   }
   try {
     const { stdout } = await execFileAsync('reg.exe', ['query', REGISTRY_KEY], {
@@ -139,9 +252,9 @@ async function detectWindowsProxy(): Promise<SystemProxyInfo> {
 }
 
 /**
- * Detect the proxy used by Windows itself. Environment variables take
- * precedence, matching common CI/terminal setups; otherwise read the WinINET
- * settings that the Windows Settings app and system proxy tools write.
+ * Detect the proxy used by the operating system. Environment variables take
+ * precedence, matching common CI/terminal setups; otherwise read the platform
+ * settings (WinINET registry on Windows, GNOME gsettings / KDE on Linux).
  */
 export async function detectSystemProxy(
   force = false,
@@ -153,8 +266,12 @@ export async function detectSystemProxy(
   let value: SystemProxyInfo;
   if (envProxy) {
     value = { url: envProxy, source: 'environment' };
-  } else {
+  } else if (process.platform === 'win32') {
     value = await detectWindowsProxy();
+  } else if (process.platform === 'linux') {
+    value = await detectLinuxProxy();
+  } else {
+    value = { url: null, source: 'none', note: '当前平台没有系统代理设置' };
   }
   cached = { value, at: Date.now() };
   return value;

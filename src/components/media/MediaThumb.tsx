@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import {
-  PlayCircleFilled,
   PictureOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons';
@@ -46,20 +45,5 @@ export const MediaThumb: React.FC<{
       onError={() => setFailed(true)}
       className={clsx('h-full w-full object-cover', className)}
     />
-  );
-};
-
-export const VideoBadge: React.FC<{ compact?: boolean }> = ({ compact }) => {
-  const { t } = useI18n();
-  return (
-    <span
-      className={clsx(
-        'inline-flex items-center gap-1 rounded-full bg-slate-900/70 font-medium text-white backdrop-blur-sm',
-        compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-1 text-[11px]',
-      )}
-    >
-      <PlayCircleFilled className="text-[10px]" />
-      {!compact && t('视频')}
-    </span>
   );
 };

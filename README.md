@@ -4,8 +4,8 @@
 
 **Bluesky media downloader**
 
-> Current version: 1.2.0
-> Download: https://github.com/vasttidec/Bsky-Spider/releases/tag/v1.2.0
+> Current version: 1.2.5
+> Download: https://github.com/vasttidec/Bsky-Spider/releases/tag/v1.2.5
 
 Bsky-Spider is built on the DeepSeek Harness framework; the whole project was developed with the DeepSeek-V4.1-Flash-1017 model at the Max reasoning level.
 
@@ -112,15 +112,20 @@ Highlights:
 
 ### Option 1: Portable ZIP (recommended)
 
-1. Download `Bsky-Spider-1.2.0-win-x64.zip` from the repository (or use the same file in the local `release/` folder) and extract it;
+1. Download `Bsky-Spider-1.2.5-win-x64.zip` from the repository (or use the same file in the local `release/` folder) and extract it;
 2. Enter the `Bsky-Spider` folder and double-click **`Bsky-Spider.exe`**;
 3. Nothing to install — no Node.js or FFmpeg required.
 
-SHA256 (ZIP): `3914EA8259D41FF04F3F349E3AB9CB8FDCBB4981411F28CE70BF01783DE5D8B0`
+SHA256 (ZIP): `4069D3F8037BF166FEDC0BE9F21EB9850D1CFC38005FC51A2AC2C13E37003F6B`
 
 - If Windows warns that "this file came from another computer", right-click the ZIP → Properties → check "Unblock", then extract;
 - Do not double-click the exe directly inside the archive preview window;
 - If startup fails, check `data\server.log` next to the exe (or `%APPDATA%\Bsky-Spider\data\server.log` when that is not writable).
+
+### Other packages
+
+- **Windows installer**: `Bsky-Spider-1.2.5-win-x64-setup.exe` — installs to `C:\Program Files\Bsky-Spider` (per-machine, administrator rights required) and offers desktop-shortcut and launch options on the final page.
+- **Linux**: `Bsky-Spider-1.2.5.AppImage` and `Bsky-Spider-1.2.5.deb` (x64); the default download folder is `~/Downloads/Bsky-Spider`.
 
 ### Option 2: Run from source
 
@@ -145,8 +150,8 @@ npm run dev
 ### Rebuilding packages
 
 ```bash
-npm run build:exe       # release/Bsky-Spider-1.2.0-portable.exe
-npm run build:zip       # release/Bsky-Spider-1.2.0-win-x64.zip (includes the win-unpacked folder)
+npm run build:exe       # release/Bsky-Spider-1.2.5-portable.exe
+npm run build:zip       # release/Bsky-Spider-1.2.5-win-x64.zip (includes the win-unpacked folder)
 ```
 
 `build:zip` internally runs `build:exe:dir` (which produces `release/win-unpacked`) and `scripts/build-zip.ps1`.
@@ -371,6 +376,7 @@ No files are lost. Unfinished tasks are kept as "Waiting/Paused" and temporary f
 
 ## Changelog
 
+- **1.2.5**: Linux builds (`.AppImage` and `.deb`) and a Windows installer; Smooth Mode for low-spec machines; startup progress bar and a fix for the Linux first-launch stall; Linux system proxy detection; refined settings layout and colored icons; network save paths on Windows; performance improvements and cleanup.
 - **1.2.0**: first publicly released version of Bsky-Spider.
 
 ## Credits and license

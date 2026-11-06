@@ -4,7 +4,7 @@ import type { AppSettings } from '../shared/types';
 import { DEFAULT_FILE_TEMPLATE, DEFAULT_FOLDER_TEMPLATE } from '../shared/templates';
 
 export const APP_NAME = 'Bsky-Spider';
-export const APP_VERSION = '1.2.0';
+export const APP_VERSION = '1.2.5';
 export const GITHUB_REPO = 'vasttidec/Bsky-Spider';
 export const GITHUB_REPO_URL = `https://github.com/${GITHUB_REPO}`;
 export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`;
@@ -73,6 +73,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   proxyUrl: '',
   requestTimeout: 30,
   desktopNotifications: true,
+  smoothMode: false,
 };
 
 export const MAX_POSTS_LIMIT = 1000;

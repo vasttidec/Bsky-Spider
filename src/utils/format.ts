@@ -44,29 +44,6 @@ export function formatDate(value: string): string {
     : translate('未知时间');
 }
 
-export function formatRelative(value: string): string {
-  const date = dayjs(value);
-  if (!date.isValid()) return '';
-  const seconds = dayjs().diff(date, 'second');
-  if (seconds < 60) return translate('刚刚');
-  if (seconds < 3600) {
-    return translate('{{count}} 分钟前', {
-      count: Math.floor(seconds / 60),
-    });
-  }
-  if (seconds < 86400) {
-    return translate('{{count}} 小时前', {
-      count: Math.floor(seconds / 3600),
-    });
-  }
-  if (seconds < 86400 * 30) {
-    return translate('{{count}} 天前', {
-      count: Math.floor(seconds / 86400),
-    });
-  }
-  return date.format('YYYY-MM-DD');
-}
-
 export function formatCount(value?: number): string {
   if (value === undefined || value === null) return '—';
   if (value < 1000) return String(value);
@@ -111,14 +88,4 @@ export function mediaSelectionKey(media: {
   id: string;
 }): string {
   return `${media.postUri}|${media.id}`;
-}
-
-export function safeDisplayHandle(handle?: string): string {
-  return handle ? `@${handle}` : '@unknown';
-}
-
-export function clampText(value: string, length: number): string {
-  const chars = Array.from(value || '');
-  if (chars.length <= length) return value;
-  return `${chars.slice(0, length).join('')}…`;
 }

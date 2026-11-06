@@ -1,4 +1,4 @@
-﻿import { chromium } from 'playwright-core';
+import { chromium } from 'playwright-core';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -205,6 +205,7 @@ const settings = {
   proxyUrl: '',
   requestTimeout: 30,
   desktopNotifications: true,
+  smoothMode: false,
 };
 
 const user = {
@@ -213,7 +214,7 @@ const user = {
 };
 
 const system = {
-  version: '1.1.5',
+  version: '1.2.5',
   platform: 'win32 x64',
   nodeVersion: 'v24.21.0',
   homeDir: 'C:\\Users\\Aurora',

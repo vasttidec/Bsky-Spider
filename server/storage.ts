@@ -11,6 +11,7 @@ import {
   MAX_POSTS_LIMIT,
   SETTINGS_FILE,
 } from './config';
+import { isRemoteTarget } from './remote';
 
 let current: AppSettings = { ...DEFAULT_SETTINGS };
 let initialized = false;
@@ -112,9 +113,11 @@ export function normalizeSettings(raw: Partial<AppSettings>): AppSettings {
   return {
     theme: normalizeTheme(raw.theme),
     language: normalizeLanguage(raw.language),
-    saveDir: saveDir
-      ? path.resolve(saveDir)
-      : DEFAULT_SETTINGS.saveDir,
+    saveDir: isRemoteTarget(saveDir)
+      ? saveDir
+      : saveDir
+        ? path.resolve(saveDir)
+        : DEFAULT_SETTINGS.saveDir,
     folderTemplate: asString(
       raw.folderTemplate,
       DEFAULT_SETTINGS.folderTemplate,
@@ -155,6 +158,10 @@ export function normalizeSettings(raw: Partial<AppSettings>): AppSettings {
     desktopNotifications: asBoolean(
       raw.desktopNotifications,
       DEFAULT_SETTINGS.desktopNotifications,
+    ),
+    smoothMode: asBoolean(
+      raw.smoothMode,
+      DEFAULT_SETTINGS.smoothMode,
     ),
   };
 }
@@ -211,11 +218,13 @@ export async function updateSettings(
     ...patch,
     ...(proxyChanged ? { proxyChoiceMade: true } : {}),
   });
-  await fs.mkdir(merged.saveDir, { recursive: true }).catch((error) => {
-    throw new Error(
-      `无法创建保存目录：${(error as Error).message || '未知错误'}`,
-    );
-  });
+  if (!isRemoteTarget(merged.saveDir)) {
+    await fs.mkdir(merged.saveDir, { recursive: true }).catch((error) => {
+      throw new Error(
+        `无法创建保存目录：${(error as Error).message || '未知错误'}`,
+      );
+    });
+  }
   current = merged;
   await writeJsonFile(SETTINGS_FILE, current);
   return current;
@@ -224,11 +233,13 @@ export async function updateSettings(
 /** Restores every setting to its documented default value. */
 export async function resetSettings(): Promise<AppSettings> {
   current = normalizeSettings({ ...DEFAULT_SETTINGS });
-  await fs.mkdir(current.saveDir, { recursive: true }).catch((error) => {
-    throw new Error(
-      `无法创建保存目录：${(error as Error).message || '未知错误'}`,
-    );
-  });
+  if (!isRemoteTarget(current.saveDir)) {
+    await fs.mkdir(current.saveDir, { recursive: true }).catch((error) => {
+      throw new Error(
+        `无法创建保存目录：${(error as Error).message || '未知错误'}`,
+      );
+    });
+  }
   await writeJsonFile(SETTINGS_FILE, current);
   return current;
 }
